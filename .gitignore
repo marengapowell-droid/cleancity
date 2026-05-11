@@ -1,0 +1,9 @@
+node_modules/
+server/node_modules/
+server/cleancity.db
+server/cleancity.db-shm
+server/cleancity.db-wal
+*.db-journal
+.DS_Store
+Thumbs.db
+*.class

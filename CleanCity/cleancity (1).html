@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CleanCity — Smart Waste Management</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --forest: #063D30;
+    --green: #0D5C46;
+    --mid: #1A8A68;
+    --mint: #4ECDA4;
+    --foam: #D6F5EC;
+    --cream: #F7FAF8;
+    --white: #FFFFFF;
+    --ink: #0A1F1A;
+    --muted: #6B8880;
+    --border: #DDE8E4;
+    --red: #EF4444;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+  }
+  .shell {
+    width: 100%;
+    max-width: 420px;
+    background: var(--white);
+    border-radius: 32px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(6,61,48,.16);
+    min-height: 640px;
+    display: flex;
+    flex-direction: column;
+  }
+  .header {
+    background: linear-gradient(150deg, #063D30 0%, #0D5C46 60%, #1A8A68 100%);
+    padding: 28px 24px 24px;
+    color: white;
+  }
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand-icon {
+    width: 42px; height: 42px;
+    background: rgba(255,255,255,.15);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .brand-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+  }
+  .brand-sub {
+    font-size: 11px;
+    opacity: .65;
+    margin-top: 2px;
+    text-transform: uppercase;
+  }
+  .screen { display: none; flex-direction: column; flex: 1; }
+  .screen.active { display: flex; }
+  .screen-body { padding: 24px; flex: 1; overflow-y: auto; }
+  .screen-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: #063D30;
+    margin-bottom: 4px;
+  }
+  .screen-sub { font-size: 13px; color: #6B8880; margin-bottom: 24px; }
+  h3 { font-size: 15px; font-weight: 600; color: #063D30; margin-bottom: 14px; }
+  
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #6B8880;
+    margin-bottom: 6px;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #DDE8E4;
+    border-radius: 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+  }
+  .field input:focus, .field select:focus { border-color: #1A8A68; }
+  .field input[readonly] { background: #D6F5EC; font-weight: 600; color: #063D30; }
+  
+  .btn {
+    width: 100%;
+    padding: 13px 20px;
+    border: none;
+    border-radius: 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-primary { background: linear-gradient(135deg, #0D5C46, #1A8A68); color: white; }
+  .btn-ghost { background: #D6F5EC; color: #0D5C46; }
+  .btn-outline { background: transparent; color: #0D5C46; border: 1.5px solid #DDE8E4; }
+  .btn-danger { background: #EF4444; color: white; padding: 8px 16px; width: auto; font-size: 13px; border-radius: 12px; cursor: pointer; border: none; }
+  .btn + .btn { margin-top: 10px; }
+  
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: #6B8880;
+    font-size: 12px;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #DDE8E4;
+  }
+  .back-link {
+    text-align: center;
+    color: #6B8880;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 16px;
+    padding: 8px;
+  }
+  .back-link:hover { color: #0D5C46; }
+  
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: #D6F5EC;
+    border-radius: 16px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: #063D30;
+  }
+  .stat-lbl { font-size: 11px; color: #6B8880; margin-top: 4px; }
+  
+  .admin-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .admin-card {
+    background: #063D30;
+    border-radius: 16px;
+    padding: 16px;
+    color: white;
+  }
+  .admin-card-num { font-size: 28px; font-weight: 700; }
+  .admin-card-lbl { font-size: 11px; opacity: 0.65; margin-top: 2px; }
+  
+  .card {
+    background: white;
+    border: 1.5px solid #DDE8E4;
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .card-title { font-size: 14px; font-weight: 600; color: #0A1F1A; }
+  .card-meta { font-size: 12px; color: #6B8880; margin-top: 4px; line-height: 1.5; }
+  
+  .badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .badge-pending { background: #FEF3C7; color: #92400E; }
+  .badge-resolved { background: #D1FAE5; color: #065F46; }
+  .badge-scheduled { background: #D6F5EC; color: #0D5C46; }
+  
+  .profile-card {
+    background: #D6F5EC;
+    border-radius: 24px;
+    padding: 20px;
+  }
+  .profile-avatar {
+    width: 60px; height: 60px;
+    background: #063D30;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 14px;
+  }
+  .profile-name { font-size: 18px; font-weight: 700; color: #063D30; }
+  .profile-id { font-size: 12px; color: #6B8880; margin-top: 2px; }
+  .profile-fields { margin-top: 16px; display: grid; gap: 10px; }
+  .profile-field { display: flex; gap: 12px; font-size: 13px; }
+  .profile-field strong { color: #6B8880; width: 80px; font-weight: 500; }
+  
+  .bottom-nav {
+    display: flex;
+    border-top: 1.5px solid #DDE8E4;
+    background: white;
+  }
+  .nav-btn {
+    flex: 1;
+    padding: 12px 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #6B8880;
+  }
+  .nav-btn .nav-icon { font-size: 20px; }
+  .nav-btn.active { color: #0D5C46; }
+  
+  .tab-page { display: none; }
+  .tab-page.active { display: block; }
+  
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(6,61,48,.45);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: white;
+    border-radius: 32px 32px 0 0;
+    padding: 28px 24px 32px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+  }
+  .modal-title { font-size: 18px; font-weight: 700; color: #063D30; }
+  .modal-close {
+    background: #F7FAF8;
+    border: none;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+  }
+  
+  .time-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .time-chip {
+    padding: 10px;
+    background: #D6F5EC;
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #0D5C46;
+  }
+  .time-chip.selected {
+    background: #0D5C46;
+    color: white;
+  }
+  
+  .action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .action-row .btn { margin: 0; }
+  
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #063D30;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 99px;
+    font-size: 13px;
+    z-index: 999;
+    display: none;
+  }
+  .empty { text-align: center; padding: 40px 20px; color: #6B8880; }
+  .empty-icon { font-size: 40px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen" class="screen active">
+    <div class="header">
+      <div class="header-brand">
+        <div class="brand-icon">🌿</div>
+        <div><div class="brand-name">CleanCity</div><div class="brand-sub">Smart Waste Management</div></div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <p class="screen-title">Welcome back</p>
+      <p class="screen-sub">Sign in to manage your waste pickups</p>
+      <button class="btn btn-primary" onclick="showScreen('residentLogin')">👤 Resident Login</button>
+      <button class="btn btn-ghost" onclick="showScreen('collectorLogin')">🚛 Collector Login</button>
+      <button class="btn btn-outline" onclick="showScreen('adminLogin')">👑 Admin Login</button>
+      <div class="divider">New here?</div>
+      <div class="action-row">
+        <button class="btn btn-ghost" onclick="showScreen('residentSignup')">📝 As Resident</button>
+        <button class="btn btn-ghost" onclick="showScreen('collectorSignup')">🚛 As Collector</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESIDENT SIGNUP -->
+  <div id="residentSignupScreen" class="screen">
+    <div class="header"><div class="brand-name">Create Account</div><div class="brand-sub">Resident registration</div></div>
+    <div class="screen-body">
+      <div class="field"><label>Your ID</label><input type="text" id="signupResidentId" readonly></div>
+      <div class="field"><label>Full Name</label><input type="text" id="signupResidentName"></div>
+      <div class="field"><label>Email</label><input type="email" id="signupResidentEmail"></div>
+      <div class="field"><label>Phone</label><input type="text" id="signupResidentPhone"></div>
+      <div class="field"><label>Area</label><select id="signupResidentArea"><option>CBD</option><option>Westlands</option><option>Kilimani</option><option>Eastlands</option></select></div>
+      <div class="field"><label>Password</label><input type="password" id="signupResidentPassword"></div>
+      <div class="field"><label>Confirm Password</label><input type="password" id="signupResidentConfirm"></div>
+      <button class="btn btn-primary" onclick="registerResident()">Create Account</button>
+      <div class="back-link" onclick="showScreen('login')">← Back to Login</div>
+    </div>
+  </div>
+
+  <!-- COLLECTOR SIGNUP -->
+  <div id="collectorSignupScreen" class="screen">
+    <div class="header"><div class="brand-name">Create Account</div><div class="brand-sub">Collector registration</div></div>
+    <div class="screen-body">
+      <div class="field"><label>Your Collector ID</label><input type="text" id="signupCollectorId" readonly></div>
+      <div class="field"><label>Full Name</label><input type="text" id="signupCollectorName"></div>
+      <div class="field"><label>Email</label><input type="email" id="signupCollectorEmail"></div>
+      <div class="field"><label>Phone</label><input type="text" id="signupCollectorPhone"></div>
+      <div class="field"><label>Zone</label><select id="signupCollectorZone"><option>CBD</option><option>Westlands</option><option>Kilimani</option><option>Eastlands</option></select></div>
+      <div class="field"><label>Password</label><input type="password" id="signupCollectorPassword"></div>
+      <div class="field"><label>Confirm Password</label><input type="password" id="signupCollectorConfirm"></div>
+      <button class="btn btn-primary" onclick="registerCollector()">Create Account</button>
+      <div class="back-link" onclick="showScreen('login')">← Back to Login</div>
+    </div>
+  </div>
+
+  <!-- RESIDENT LOGIN -->
+  <div id="residentLoginScreen" class="screen">
+    <div class="header"><div class="brand-name">Resident Login</div></div>
+    <div class="screen-body">
+      <div class="field"><label>Email</label><input type="email" id="loginResidentEmail"></div>
+      <div class="field"><label>Password</label><input type="password" id="loginResidentPassword"></div>
+      <button class="btn btn-primary" onclick="doResidentLogin()">Sign In</button>
+      <div class="back-link" onclick="showScreen('login')">← Back</div>
+    </div>
+  </div>
+
+  <!-- COLLECTOR LOGIN -->
+  <div id="collectorLoginScreen" class="screen">
+    <div class="header"><div class="brand-name">Collector Login</div></div>
+    <div class="screen-body">
+      <div class="field"><label>Collector ID</label><input type="text" id="loginCollectorId" placeholder="e.g. C-201"></div>
+      <div class="field"><label>Password</label><input type="password" id="loginCollectorPassword"></div>
+      <button class="btn btn-primary" onclick="doCollectorLogin()">Sign In</button>
+      <div class="back-link" onclick="showScreen('login')">← Back</div>
+    </div>
+  </div>
+
+  <!-- ADMIN LOGIN -->
+  <div id="adminLoginScreen" class="screen">
+    <div class="header"><div class="brand-name">Admin Login</div></div>
+    <div class="screen-body">
+      <div class="field"><label>Password</label><input type="password" id="loginAdminPassword"></div>
+      <button class="btn btn-primary" onclick="doAdminLogin()">Sign In</button>
+      <div class="back-link" onclick="showScreen('login')">← Back</div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboardScreen" class="screen">
+    <div class="header">
+      <div class="header-row">
+        <div><div class="brand-name">CleanCity</div><div class="brand-sub" id="dashboardLoc">Nairobi</div></div>
+        <button class="btn-danger" onclick="logout()">🚪 Logout</button>
+      </div>
+      <div id="dashboardGreeting" style="margin-top:16px"></div>
+    </div>
+    <div class="screen-body" style="padding:20px">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="statPickups">0</div><div class="stat-lbl">Pickups</div></div>
+        <div class="stat-card"><div class="stat-num" id="statPending">0</div><div class="stat-lbl">Pending</div></div>
+        <div class="stat-card"><div class="stat-num" id="statResolved">0</div><div class="stat-lbl">Resolved</div></div>
+      </div>
+      <div id="adminExtraStats" style="display:none">
+        <div class="admin-grid">
+          <div class="admin-card"><div class="admin-card-num" id="adminTotalResidents">0</div><div class="admin-card-lbl">Residents</div></div>
+          <div class="admin-card"><div class="admin-card-num" id="adminTotalCollectors">0</div><div class="admin-card-lbl">Collectors</div></div>
+          <div class="admin-card"><div class="admin-card-num" id="adminTotalPickups">0</div><div class="admin-card-lbl">All Pickups</div></div>
+          <div class="admin-card"><div class="admin-card-num" id="adminTotalReports">0</div><div class="admin-card-lbl">All Reports</div></div>
+        </div>
+      </div>
+      <div id="residentActions" style="display:none">
+        <div class="action-row">
+          <button class="btn btn-primary" onclick="openPickupModal()">📦 Request Pickup</button>
+          <button class="btn btn-ghost" onclick="openReportModal()">⚠️ Report Issue</button>
+        </div>
+      </div>
+      <div id="collectorActions" style="display:none">
+        <button class="btn btn-ghost" onclick="showTab('track')">📋 View My Pickups</button>
+      </div>
+      <div id="adminActions" style="display:none">
+        <button class="btn btn-primary" onclick="refreshAdminData()">🔄 Refresh Stats</button>
+        <div class="action-row" style="margin-top:10px">
+          <button class="btn btn-ghost" onclick="showTab('track')">📦 All Pickups</button>
+          <button class="btn btn-ghost" onclick="showTab('reports')">⚠️ All Reports</button>
+        </div>
+      </div>
+      <div id="tabHome" class="tab-page active">
+        <h3>Recent Reports</h3>
+        <div id="homeReports"></div>
+      </div>
+      <div id="tabTrack" class="tab-page">
+        <h3 id="trackTitle">My Pickups</h3>
+        <div id="trackPickups"></div>
+      </div>
+      <div id="tabReports" class="tab-page">
+        <h3>Reports</h3>
+        <div id="reportsTabContent"></div>
+      </div>
+      <div id="tabProfile" class="tab-page">
+        <div id="profileContent"></div>
+      </div>
+    </div>
+    <div class="bottom-nav" id="bottomNav"></div>
+  </div>
+</div>
+
+<!-- Modals -->
+<div id="pickupModal" class="modal-overlay" onclick="if(event.target===this)closeModal('pickupModal')">
+  <div class="modal-box">
+    <div class="modal-header"><span class="modal-title">Request Pickup</span><button class="modal-close" onclick="closeModal('pickupModal')">✕</button></div>
+    <div class="field"><label>Waste Type</label><select id="pickupWasteType"><option>Plastic</option><option>Organic</option><option>Electronic</option><option>General</option></select></div>
+    <div class="field"><label>Date</label><input type="date" id="pickupDate"></div>
+    <div class="field"><label>Time (9AM-11AM)</label><div class="time-grid" id="timeGrid"><div class="time-chip" data-time="9:00 AM">9:00 AM</div><div class="time-chip" data-time="9:30 AM">9:30 AM</div><div class="time-chip" data-time="10:00 AM">10:00 AM</div><div class="time-chip" data-time="10:30 AM">10:30 AM</div><div class="time-chip" data-time="11:00 AM">11:00 AM</div></div><input type="hidden" id="pickupTime"></div>
+    <div class="field"><label>Location</label><input type="text" id="pickupLocation" placeholder="Your address"></div>
+    <button class="btn btn-primary" onclick="submitPickup()">Submit</button>
+  </div>
+</div>
+
+<div id="reportModal" class="modal-overlay" onclick="if(event.target===this)closeModal('reportModal')">
+  <div class="modal-box">
+    <div class="modal-header"><span class="modal-title">Report Issue</span><button class="modal-close" onclick="closeModal('reportModal')">✕</button></div>
+    <div class="field"><label>Issue Type</label><select id="reportType"><option>Missed Pickup</option><option>Overflowing Bin</option><option>Illegal Dumping</option></select></div>
+    <div class="field"><label>Location</label><input type="text" id="reportLocation"></div>
+    <div class="field"><label>Description</label><textarea id="reportDesc" rows="3"></textarea></div>
+    <button class="btn btn-primary" onclick="submitReport()">Submit</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// DATA
+let residents = JSON.parse(localStorage.getItem('residents') || '[]');
+let collectors = JSON.parse(localStorage.getItem('collectors') || '[]');
+let reports = JSON.parse(localStorage.getItem('reports') || '[]');
+let pickups = JSON.parse(localStorage.getItem('pickups') || '[]');
+let currentUser = null;
+let currentRole = null;
+let selectedTime = null;
+
+function save() {
+  localStorage.setItem('residents', JSON.stringify(residents));
+  localStorage.setItem('collectors', JSON.stringify(collectors));
+  localStorage.setItem('reports', JSON.stringify(reports));
+  localStorage.setItem('pickups', JSON.stringify(pickups));
+}
+
+function toast(msg) {
+  let t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2500);
+}
+
+// SCREEN NAVIGATION
+function showScreen(screen) {
+  let screens = ['loginScreen', 'residentSignupScreen', 'collectorSignupScreen', 'residentLoginScreen', 'collectorLoginScreen', 'adminLoginScreen', 'dashboardScreen'];
+  screens.forEach(s => { let el = document.getElementById(s); if(el) el.style.display = 'none'; });
+  let targetId = screen + 'Screen';
+  if(screen === 'login') targetId = 'loginScreen';
+  let target = document.getElementById(targetId);
+  if(target) target.style.display = 'flex';
+  if(screen === 'residentSignup') document.getElementById('signupResidentId').value = 'R-' + (residents.length + 1);
+  if(screen === 'collectorSignup') document.getElementById('signupCollectorId').value = 'C-' + (200 + collectors.length + 1);
+}
+
+// REGISTER
+function registerResident() {
+  let name = document.getElementById('signupResidentName').value;
+  let email = document.getElementById('signupResidentEmail').value;
+  let phone = document.getElementById('signupResidentPhone').value;
+  let area = document.getElementById('signupResidentArea').value;
+  let pwd = document.getElementById('signupResidentPassword').value;
+  let cpwd = document.getElementById('signupResidentConfirm').value;
+  if(!name || !email || !pwd) return toast('Fill all fields');
+  if(pwd !== cpwd) return toast('Passwords do not match');
+  let newId = residents.length + 1;
+  let user = { id: newId, name, email, phone, area, password: pwd, joined: 'May 2026' };
+  residents.push(user);
+  save();
+  toast('✅ Account created! ID: R-' + newId);
+  loginAs(user, 'resident');
+}
+
+function registerCollector() {
+  let name = document.getElementById('signupCollectorName').value;
+  let email = document.getElementById('signupCollectorEmail').value;
+  let phone = document.getElementById('signupCollectorPhone').value;
+  let zone = document.getElementById('signupCollectorZone').value;
+  let pwd = document.getElementById('signupCollectorPassword').value;
+  let cpwd = document.getElementById('signupCollectorConfirm').value;
+  if(!name || !email || !pwd) return toast('Fill all fields');
+  if(pwd !== cpwd) return toast('Passwords do not match');
+  let newId = 200 + collectors.length + 1;
+  let user = { id: newId, name, email, phone, zone, password: pwd, joined: 'May 2026' };
+  collectors.push(user);
+  save();
+  toast('✅ Account created! ID: C-' + newId);
+  loginAs(user, 'collector');
+}
+
+// LOGIN
+function doResidentLogin() {
+  let email = document.getElementById('loginResidentEmail').value;
+  let pwd = document.getElementById('loginResidentPassword').value;
+  let user = residents.find(r => r.email === email && r.password === pwd);
+  if(user) loginAs(user, 'resident');
+  else toast('❌ Invalid email or password');
+}
+
+function doCollectorLogin() {
+  let id = parseInt(document.getElementById('loginCollectorId').value.replace('C-',''));
+  let pwd = document.getElementById('loginCollectorPassword').value;
+  let user = collectors.find(c => c.id === id && c.password === pwd);
+  if(user) loginAs(user, 'collector');
+  else toast('❌ Invalid ID or password');
+}
+
+function doAdminLogin() {
+  let pwd = document.getElementById('loginAdminPassword').value;
+  if(pwd === 'admin123') loginAs({ name: 'Admin', email: 'admin@cleancity.com' }, 'admin');
+  else toast('❌ Wrong password');
+}
+
+function loginAs(user, role) {
+  currentUser = user;
+  currentRole = role;
+  document.getElementById('dashboardGreeting').innerHTML = role === 'admin' ? 'Welcome back, Admin! 👑' : (role === 'collector' ? `Welcome, Collector ${user.name}! 🚛` : `Hello, ${user.name}! 👋`);
+  document.getElementById('residentActions').style.display = role === 'resident' ? 'block' : 'none';
+  document.getElementById('collectorActions').style.display = role === 'collector' ? 'block' : 'none';
+  document.getElementById('adminActions').style.display = role === 'admin' ? 'block' : 'none';
+  document.getElementById('adminExtraStats').style.display = role === 'admin' ? 'block' : 'none';
+  
+  let nav = document.getElementById('bottomNav');
+  if(role === 'admin') {
+    nav.innerHTML = `<button class="nav-btn active" onclick="showTab('home')"><span class="nav-icon">🏠</span>Home</button><button class="nav-btn" onclick="showTab('track')"><span class="nav-icon">🗺️</span>Track</button><button class="nav-btn" onclick="showTab('reports')"><span class="nav-icon">📋</span>Reports</button><button class="nav-btn" onclick="showTab('profile')"><span class="nav-icon">👤</span>Profile</button>`;
+  } else {
+    nav.innerHTML = `<button class="nav-btn active" onclick="showTab('home')"><span class="nav-icon">🏠</span>Home</button><button class="nav-btn" onclick="showTab('track')"><span class="nav-icon">🗺️</span>Track</button><button class="nav-btn" onclick="showTab('profile')"><span class="nav-icon">👤</span>Profile</button>`;
+  }
+  
+  showScreen('dashboard');
+  updateDashboard();
+  showTab('home');
+}
+
+function logout() {
+  if(confirm('Sign out?')) {
+    currentUser = null;
+    currentRole = null;
+    document.getElementById('dashboardScreen').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    toast('👋 Signed out');
+  }
+}
+
+function showTab(tab) {
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+  if(tab === 'track') renderTrack();
+  if(tab === 'profile') renderProfile();
+  if(tab === 'reports' && currentRole === 'admin') renderReportsTab();
+}
+
+function updateDashboard() {
+  if(currentRole === 'admin') {
+    refreshAdminData();
+    return;
+  }
+  let myPickups = pickups.filter(p => p.userEmail === currentUser.email);
+  let myReports = reports.filter(r => r.userEmail === currentUser.email);
+  document.getElementById('statPickups').innerText = myPickups.length;
+  document.getElementById('statPending').innerText = myReports.filter(r => r.status === 'PENDING').length;
+  document.getElementById('statResolved').innerText = myReports.filter(r => r.status === 'RESOLVED').length;
+  
+  let reportsHtml = myReports.length ? myReports.slice().reverse().map(r => `<div class="card"><div class="card-row"><div><div class="card-title">⚠️ ${r.type}</div><div class="card-meta">📍 ${r.location}<br>📅 ${r.date}</div></div><span class="badge badge-pending">${r.status}</span></div></div>`).join('') : '<div class="empty"><div class="empty-icon">📋</div><p>No reports yet</p></div>';
+  document.getElementById('homeReports').innerHTML = reportsHtml;
+}
+
+function refreshAdminData() {
+  document.getElementById('adminTotalResidents').innerText = residents.length;
+  document.getElementById('adminTotalCollectors').innerText = collectors.length;
+  document.getElementById('adminTotalPickups').innerText = pickups.length;
+  document.getElementById('adminTotalReports').innerText = reports.length;
+  document.getElementById('statPickups').innerText = pickups.length;
+  document.getElementById('statPending').innerText = reports.filter(r => r.status === 'PENDING').length;
+  document.getElementById('statResolved').innerText = reports.filter(r => r.status === 'RESOLVED').length;
+  let allReportsHtml = reports.length ? reports.slice().reverse().map(r => `<div class="card"><div class="card-row"><div><div class="card-title">⚠️ ${r.type}</div><div class="card-meta">📍 ${r.location}<br>📅 ${r.date}<br>👤 By: ${r.user}</div></div><span class="badge ${r.status === 'PENDING' ? 'badge-pending' : 'badge-resolved'}">${r.status}</span></div></div>`).join('') : '<div class="empty"><div class="empty-icon">📋</div><p>No reports</p></div>';
+  document.getElementById('homeReports').innerHTML = allReportsHtml;
+  toast('📊 Stats refreshed');
+}
+
+function renderTrack() {
+  let list = currentRole === 'admin' ? pickups : pickups.filter(p => p.userEmail === currentUser.email);
+  let html = list.length ? list.slice().reverse().map(p => `<div class="card"><div class="card-row"><div><div class="card-title">🗑️ ${p.type}</div><div class="card-meta">📍 ${p.location}<br>📅 ${p.date} at ${p.time}</div></div><span class="badge badge-scheduled">${p.status}</span></div></div>`).join('') : '<div class="empty"><div class="empty-icon">📦</div><p>No pickups yet</p></div>';
+  document.getElementById('trackPickups').innerHTML = html;
+  document.getElementById('trackTitle').innerText = currentRole === 'admin' ? 'All Pickups' : 'My Pickups';
+}
+
+function renderReportsTab() {
+  let list = reports;
+  let html = list.length ? list.slice().reverse().map(r => `<div class="card"><div class="card-row"><div><div class="card-title">⚠️ ${r.type}</div><div class="card-meta">📍 ${r.location}<br>📅 ${r.date}<br>👤 By: ${r.user}</div>${r.desc ? `<div class="card-meta">📝 "${r.desc}"</div>` : ''}</div><span class="badge ${r.status === 'PENDING' ? 'badge-pending' : 'badge-resolved'}">${r.status}</span></div></div>`).join('') : '<div class="empty"><div class="empty-icon">⚠️</div><p>No reports</p></div>';
+  document.getElementById('reportsTabContent').innerHTML = html;
+}
+
+function renderProfile() {
+  let u = currentUser;
+  document.getElementById('profileContent').innerHTML = `<div class="profile-card"><div class="profile-avatar">${currentRole === 'admin' ? '👑' : (currentRole === 'collector' ? '🚛' : '👤')}</div><div class="profile-name">${u.name}</div><div class="profile-id">${currentRole === 'admin' ? 'System Administrator' : (currentRole === 'collector' ? 'Collector ID: C-' + u.id : 'Resident ID: R-' + u.id)}</div><div class="profile-fields"><div class="profile-field"><strong>Email</strong><span>${u.email}</span></div>${u.phone ? `<div class="profile-field"><strong>Phone</strong><span>${u.phone}</span></div>` : ''}${u.area ? `<div class="profile-field"><strong>Area</strong><span>${u.area}</span></div>` : ''}${u.zone ? `<div class="profile-field"><strong>Zone</strong><span>${u.zone}</span></div>` : ''}<div class="profile-field"><strong>Joined</strong><span>${u.joined || 'May 2026'}</span></div></div></div>`;
+}
+
+// MODALS
+function openPickupModal() {
+  let d = new Date(); d.setDate(d.getDate() + 1);
+  document.getElementById('pickupDate').value = d.toISOString().split('T')[0];
+  document.getElementById('pickupModal').classList.add('open');
+  selectedTime = null;
+  document.querySelectorAll('.time-chip').forEach(c => c.classList.remove('selected'));
+}
+function openReportModal() { document.getElementById('reportModal').classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// Time chip selection
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.time-chip').forEach(chip => {
+    chip.onclick = function() {
+      document.querySelectorAll('.time-chip').forEach(c => c.classList.remove('selected'));
+      this.classList.add('selected');
+      selectedTime = this.getAttribute('data-time');
+      document.getElementById('pickupTime').value = selectedTime;
+    };
+  });
+});
+
+function submitPickup() {
+  if(!selectedTime) return toast('Please select a time slot');
+  let loc = document.getElementById('pickupLocation').value;
+  if(!loc) return toast('Please enter a location');
+  let newPickup = {
+    id: pickups.length + 1,
+    type: document.getElementById('pickupWasteType').value,
+    location: loc,
+    date: document.getElementById('pickupDate').value,
+    time: selectedTime,
+    status: 'SCHEDULED',
+    userEmail: currentUser.email,
+    userName: currentUser.name
+  };
+  pickups.push(newPickup);
+  save();
+  closeModal('pickupModal');
+  updateDashboard();
+  toast('✅ Pickup requested!');
+}
+
+function submitReport() {
+  let loc = document.getElementById('reportLocation').value;
+  if(!loc) return toast('Please enter a location');
+  let newId = 'RPT-' + (reports.length + 101);
+  let newReport = {
+    id: newId,
+    type: document.getElementById('reportType').value,
+    location: loc,
+    desc: document.getElementById('reportDesc').value,
+    status: 'PENDING',
+    date: new Date().toLocaleDateString(),
+    user: currentUser.name,
+    userEmail: currentUser.email
+  };
+  reports.unshift(newReport);
+  save();
+  closeModal('reportModal');
+  updateDashboard();
+  toast('✅ Report submitted! ID: ' + newId);
+}
+
+</script>
+</body>
+</html>
